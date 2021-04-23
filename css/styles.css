@@ -64,3 +64,10 @@
     background-color: white;
     box-shadow: inset 0 0 5px rgba(0, 255, 21, 0.5);
 }
+
+.board .single-field.near-bomb{
+    background-color: white;
+    box-shadow: inset 0 0 5px rgba(255, 165, 0, 0.5);
+    text-align: center;
+    line-height: 45px;
+}
