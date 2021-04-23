@@ -1,13 +1,13 @@
-(function() {
+(function () {
     var minNumber = 1;
     var maxNumber = 100;
-    var aiNumbersLength = 16;
+    var aiNumbersLength = 10;
     var userMaxNumbersLength = maxNumber - minNumber - aiNumbers + 1;
 
     var aiNumbers = [];
     var userNumbers = [];
 
-    window.addEventListener("load", function() {
+    window.addEventListener("load", function () {
         createAiNumbers()
 
         renderUiBlocks()
@@ -50,11 +50,83 @@
         }
 
         userNumbers.push(value);
-        target.classList.add("no-bomb")
+
+        // ecco la mia funzione all'opera!!!
+        var numero = nearBomb(value)
+
+        if (numero === 0) {
+            target.classList.add("no-bomb")
+        } else {
+            target.innerHTML = numero
+            target.classList.add("near-bomb")
+        }
 
         if (userNumbers.length === userMaxNumbersLength) {
             onGameOver()
         }
+    }
+
+    function nearBomb(clickedValue) {
+        // variabili interne alla funzione
+        var mybomb
+        var counter = 0;
+
+        // casi speciali
+        var bordoSx = [];
+        var bordoDx = [];
+
+        // questo seerve nel caso voglia un quadrato di lato diverso da 10
+        var lato = Math.sqrt(maxNumber, 2);
+
+
+        // pusho nell' Array di bordi laterali (casi speciali)
+        for (var index = 1; index < maxNumber; index = index + lato) {
+            bordoSx.push(parseInt(index));
+        }
+        for (var indice = lato; indice <= maxNumber; indice = indice + lato) {
+            bordoDx.push(indice);
+        }
+
+        // per ogni bomba
+        // cerco i valori vicini -  le variabili "vicino alla bomba" assumono valori numerici
+        for (var index = 0; index < aiNumbers.length; index++) {
+            mybomb = aiNumbers[index];
+            mybomb = parseInt(mybomb);
+            var primaDellaBomba = (mybomb - 1);
+            var dopoLabomba = (mybomb + 1);
+            var sopraLaBomba = (mybomb - (maxNumber / lato));
+            var sottolaBomba = (mybomb + (maxNumber / lato));
+            var diagSxSopraBomba = (primaDellaBomba - (maxNumber / lato));
+            var diagDxSopraBomba = (dopoLabomba - (maxNumber / lato));
+            var diagSxSottoBomba = (primaDellaBomba + (maxNumber / lato));
+            var diagDxSottoBomba = (dopoLabomba + (maxNumber / lato));
+
+
+            // escludo i bordi
+            if (bordoSx.includes(mybomb) || bordoDx.includes(clickedValue) && (mybomb === (clickedValue + 1))) {
+                primaDellaBomba = false;
+                diagSxSopraBomba = false;
+                diagSxSottoBomba = false;
+            }
+            if (bordoDx.includes(mybomb) || bordoSx.includes(clickedValue) && (mybomb === (clickedValue - 1))) {
+                dopoLabomba = false;
+                diagDxSopraBomba = false;
+                diagDxSottoBomba = false;
+            }
+
+
+            //  mettto in un Array i valori vicini alle bombe generate
+            var nearBombs = [primaDellaBomba, dopoLabomba, sopraLaBomba, sottolaBomba, diagSxSopraBomba, diagDxSopraBomba, diagSxSottoBomba, diagDxSottoBomba];
+
+
+            // se il valore del click è incluso nell'Array "vicino alle bombe" inietto nel Div il valore del counter
+            if (nearBombs.includes(clickedValue)) {
+                counter += 1;
+                //target.innerHTML = (counter);
+            }
+        }
+
+        return counter
     }
 
     function onGameOver(isBomb) {
@@ -78,7 +150,7 @@
     }
 
     /*
-    Crea i numeir iniziali del computer
+    Crea i numeri iniziali del computer
     Si assicura anche che i numeri non siano doppi
     */
     function createAiNumbers() {
@@ -93,3 +165,6 @@
         console.log(aiNumbers);
     }
 })()
+
+
+
