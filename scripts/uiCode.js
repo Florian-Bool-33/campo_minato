@@ -1,11 +1,12 @@
 (function () {
     var minNumber = 1;
-    var maxNumber = 100;
-    var aiNumbersLength = 10;
-    var userMaxNumbersLength = maxNumber - minNumber - aiNumbers + 1;
-
+    var lato = 10
+    var maxNumber = Math.pow(lato, 2)
+    var aiNumbersLength = 16;
+    var userMaxNumbersLength = maxNumber - minNumber - aiNumbersLength + 1;
     var aiNumbers = [];
     var userNumbers = [];
+    var userSupposedNumbers = [];
 
     window.addEventListener("load", function () {
         createAiNumbers()
@@ -17,13 +18,13 @@
 
     function renderUiBlocks() {
         var boardElement = document.querySelector(".board");
-        var elementsToAdd = []
+        var elementsToAdd = [];
 
         for (var i = minNumber; i <= maxNumber; i++) {
             var isBomb = aiNumbers.includes(i);
             var element = "<div class='single-field' data-bomb='" + isBomb + "' data-value='" + i + "'></div>";
 
-            elementsToAdd.push(element)
+            elementsToAdd.push(element);
         }
 
         boardElement.innerHTML = elementsToAdd.join("\n");
@@ -31,8 +32,8 @@
 
     function bindEvents() {
         var boardElement = document.querySelector(".board");
-
-        boardElement.addEventListener("click", onSingleElementClick)
+        boardElement.addEventListener("click", onSingleElementClick);
+        boardElement.addEventListener("contextmenu", innerBombSimbol);
     }
 
     function onSingleElementClick(event) {
@@ -40,31 +41,49 @@
         var value = parseInt(target.dataset.value);
 
         // Se l'utente ha cliccato su un numero già selezionato, ignora il click
+
         if (userNumbers.includes(value)) {
             return
         }
 
         if (target.dataset.bomb === "true") {
+            target.innerHTML = "";
             target.classList.add("bomb");
-            return onGameOver(true)
+            return onGameOver(true);
         }
 
         userNumbers.push(value);
 
-        // ecco la mia funzione all'opera!!!
         var numero = nearBomb(value)
 
         if (numero === 0) {
-            target.classList.add("no-bomb")
+            target.classList.add("no-bomb");
+            target.innerHTML = "";
         } else {
             target.innerHTML = numero
-            target.classList.add("near-bomb")
+            target.classList.add("near-bomb");
         }
 
         if (userNumbers.length === userMaxNumbersLength) {
-            onGameOver()
+            onGameOver();
         }
     }
+
+    function innerBombSimbol(event) {
+        event.preventDefault();
+        var target = event.target;
+        var value = parseInt(target.dataset.value);
+        // se ho già cliccato il valore conosco se è una bomba o un "near-bomb" quindi non serve mettere un simbolo bomba al click destro, diversamente al click destro inserisce un simbolo bomba per dare la possibilità all'utente di ipotizzare dove siano le bombe e ricordarselo, pusha infine su un Array il valore inserito
+        if (!userNumbers.includes(value) && !userSupposedNumbers.includes(value)) {
+            target.innerHTML = ("&#128163;"); 
+            userSupposedNumbers.push(value);
+        // se clicco due volte con il destro su una bandierina la cancello    
+        } else if (!userNumbers.includes(value) && userSupposedNumbers.includes(value)){
+            target.innerHTML = ("");
+            userSupposedNumbers.splice(userSupposedNumbers.length - 1)
+        }
+    }
+
 
     function nearBomb(clickedValue) {
         // variabili interne alla funzione
@@ -74,10 +93,6 @@
         // casi speciali
         var bordoSx = [];
         var bordoDx = [];
-
-        // questo seerve nel caso voglia un quadrato di lato diverso da 10
-        var lato = Math.sqrt(maxNumber, 2);
-
 
         // pusho nell' Array di bordi laterali (casi speciali)
         for (var index = 1; index < maxNumber; index = index + lato) {
